@@ -19,7 +19,7 @@ model User {
   name         String
   avatar       String?
   refreshToken String?
-  isVerified   Boolean  @default(false)
+  isVerified   Boolean      @default(false)
   otp          String?
   otpExpiresAt DateTime?
   members      NoteMember[]
@@ -31,15 +31,16 @@ model User {
 }
 
 model Note {
-  id        String       @id @default(cuid())
-  title     String
-  content   String       @default("")
-  members   NoteMember[]
-  invites   Invite[]
-  comments  Comment[]
-  files     File[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id           String        @id @default(cuid())
+  title        String
+  content      String        @default("")
+  members      NoteMember[]
+  invites      Invite[]
+  comments     Comment[]
+  files        File[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  noteVersions NoteVersion[]
 
   @@map("notes")
 }
@@ -102,4 +103,15 @@ model Invite {
   createdAt DateTime @default(now())
 
   @@map("invites")
+}
+
+model NoteVersion {
+  id        String   @id @default(cuid())
+  content   String
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  savedBy   String
+  createdAt DateTime @default(now())
+
+  @@map("note_versions")
 }

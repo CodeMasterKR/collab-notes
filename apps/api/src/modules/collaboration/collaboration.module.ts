@@ -1,0 +1,11 @@
+import { Module } from '@nestjs/common'
+import { CollaborationService } from './collaboration.service'
+import { CollaborationController } from './collaboration.controller'
+import { PrismaModule } from '../../prisma/prisma.module'
+
+@Module({
+  imports: [PrismaModule],
+  providers: [CollaborationService],
+  controllers: [CollaborationController],
+})
+export class CollaborationModule {}
