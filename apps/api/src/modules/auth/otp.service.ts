@@ -8,7 +8,7 @@ export class OtpService {
 
   expiresAt(): Date {
     const date = new Date()
-    date.setMinutes(date.getMinutes() + 5) // 5 daqiqa
+    date.setMinutes(date.getMinutes() + 5) 
     return date
   }
 

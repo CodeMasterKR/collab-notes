@@ -5,7 +5,7 @@ import { AuthService } from './auth.service'
 import { AuthController } from './auth.controller'
 import { JwtStrategy } from './jwt.strategy'
 import { OtpService } from './otp.service'
-import { MailModule } from '../mail/mail.module' // ← qo'shing
+import { MailModule } from '../mail/mail.module' 
 
 @Module({
   imports: [
@@ -14,7 +14,7 @@ import { MailModule } from '../mail/mail.module' // ← qo'shing
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '15m' },
     }),
-    MailModule, // ← qo'shing
+    MailModule,
   ],
   providers: [AuthService, JwtStrategy, OtpService],
   controllers: [AuthController],
