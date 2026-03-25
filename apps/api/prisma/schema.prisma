@@ -1,79 +1,105 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum Role {
+  OWNER
+  EDITOR
+  VIEWER
+}
 
-  ownedNotes    Note[]         @relation("NoteOwner")
-  collaborators Collaborator[]
-  comments      Comment[]
-  versions      NoteVersion[]
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  password     String
+  name         String
+  avatar       String?
+  refreshToken String?
+  isVerified   Boolean  @default(false)
+  otp          String?
+  otpExpiresAt DateTime?
+  members      NoteMember[]
+  comments     Comment[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("users")
 }
 
 model Note {
-  id        String   @id @default(uuid())
+  id        String       @id @default(cuid())
   title     String
-  content   String   @default("")
-  ownerId   String
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  content   String       @default("")
+  members   NoteMember[]
+  invites   Invite[]
+  comments  Comment[]
+  files     File[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
-  owner         User           @relation("NoteOwner", fields: [ownerId], references: [id])
-  collaborators Collaborator[]
-  comments      Comment[]
-  versions      NoteVersion[]
+  @@map("notes")
 }
 
-model Collaborator {
-  id        String   @id @default(uuid())
-  noteId    String
-  userId    String
-  createdAt DateTime @default(now())
+model NoteMember {
+  id       String   @id @default(cuid())
+  role     Role     @default(VIEWER)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  note     Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId   String
+  joinedAt DateTime @default(now())
 
-  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([noteId, userId])
+  @@unique([userId, noteId])
+  @@map("note_members")
 }
 
 model Comment {
-  id        String   @id @default(uuid())
-  content   String
-  noteId    String
+  id        String    @id @default(cuid())
+  text      String
+  resolved  Boolean   @default(false)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  note      Note      @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId    String
+  parentId  String?
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id])
+  @@map("comments")
 }
 
-model NoteVersion {
-  id        String   @id @default(uuid())
-  content   String
+model File {
+  id         String   @id @default(cuid())
+  filename   String
+  storedName String
+  url        String
+  mimeType   String
+  size       Int
+  note       Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId     String
+  uploadedBy String
+  createdAt  DateTime @default(now())
+
+  @@map("files")
+}
+
+model Invite {
+  id        String   @id @default(cuid())
+  token     String   @unique @default(cuid())
+  email     String?
+  role      Role     @default(EDITOR)
+  used      Boolean  @default(false)
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   noteId    String
-  userId    String
+  createdBy String
+  expiresAt DateTime
   createdAt DateTime @default(now())
 
-  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id])
-
-  @@index([noteId, createdAt(sort: Desc)])
+  @@map("invites")
 }
