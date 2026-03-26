@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class NotesService {
@@ -104,4 +105,28 @@ export class NotesService {
       },
     });
   }
+
+  async getMyRole(userId: string, noteId: string) {
+  const member = await this.prisma.noteMember.findUnique({
+    where: { userId_noteId: { userId, noteId } },
+  })
+  if (!member) throw new ForbiddenException("Ruxsat yo'q")
+  return { role: member.role }
+}
+
+async updateMemberRole(ownerId: string, noteId: string, targetUserId: string, role: Role) {
+  const owner = await this.prisma.noteMember.findUnique({
+    where: { userId_noteId: { userId: ownerId, noteId } },
+  })
+  if (!owner || owner.role !== 'OWNER') {
+    throw new ForbiddenException('Faqat OWNER rol o\'zgartira oladi')
+  }
+  if (ownerId === targetUserId) {
+    throw new ForbiddenException('O\'z rolingizni o\'zgartira olmaysiz')
+  }
+  return this.prisma.noteMember.update({
+    where: { userId_noteId: { userId: targetUserId, noteId } },
+    data: { role },
+  })
+}
 }

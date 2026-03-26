@@ -1,1 +1,36 @@
 @import "tailwindcss";
+
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9CA3AF;
+  pointer-events: none;
+  height: 0;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #e5e7eb;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #d1d5db;
+}
